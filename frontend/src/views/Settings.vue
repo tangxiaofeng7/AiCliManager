@@ -113,7 +113,7 @@
         <div class="about-info">
           <div class="about-row">
             <span class="about-label">应用版本</span>
-            <span class="about-value mono">v0.1.0</span>
+            <span class="about-value mono">{{ appVersion }}</span>
           </div>
           <div class="about-row">
             <span class="about-label">技术栈</span>
@@ -137,12 +137,14 @@
 import { ref, onMounted, reactive } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Check } from '@element-plus/icons-vue'
+import packageJson from '../../package.json'
 import { getSettings, saveSettings } from '../api'
 
 // ---- 状态 ----
 const loading = ref(false)
 const saving = ref(false)
 const dbPath = ref('~/.aiclimgr/data.db')
+const appVersion = `v${packageJson.version}`
 
 // 设置项，key 与后端 settings 表的 key 一一对应
 const settings = reactive({

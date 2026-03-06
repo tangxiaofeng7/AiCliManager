@@ -3,7 +3,7 @@
   <div class="statusbar">
     <span class="status-item">AiCliManager</span>
     <span class="status-divider">|</span>
-    <span class="status-item">v0.1.0</span>
+    <span class="status-item">{{ appVersion }}</span>
     <span class="status-divider">|</span>
     <span class="status-item">Wails v2 + Go 1.24 + Vue 3</span>
     <div class="status-spacer" />
@@ -13,9 +13,11 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
+import packageJson from '../../../package.json'
 
 // 当前时间显示
 const currentTime = ref('')
+const appVersion = `v${packageJson.version}`
 
 const updateTime = () => {
   const now = new Date()
