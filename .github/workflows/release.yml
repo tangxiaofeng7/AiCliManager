@@ -44,31 +44,37 @@ jobs:
             arch: amd64
             runner: windows-latest
             archive_format: zip
+            build_tags: ""
           - platform: windows
             goos: windows
             arch: arm64
             runner: windows-latest
             archive_format: zip
+            build_tags: ""
           - platform: linux
             goos: linux
             arch: amd64
-            runner: ubuntu-latest
+            runner: ubuntu-24.04
             archive_format: tar.gz
+            build_tags: webkit2_41
           - platform: linux
             goos: linux
             arch: arm64
-            runner: ubuntu-latest
+            runner: ubuntu-24.04-arm
             archive_format: tar.gz
+            build_tags: webkit2_41
           - platform: macos
             goos: darwin
             arch: amd64
             runner: macos-latest
             archive_format: zip
+            build_tags: ""
           - platform: macos
             goos: darwin
             arch: arm64
             runner: macos-latest
             archive_format: zip
+            build_tags: ""
 
     env:
       RELEASE_VERSION: ${{ needs.prepare.outputs.release_version }}
@@ -110,6 +116,13 @@ jobs:
           }
           EOF
 
+      - name: Install Linux build dependencies
+        if: matrix.platform == 'linux'
+        shell: bash
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential pkg-config libgtk-3-dev libwebkit2gtk-4.1-dev
+
       - name: Install frontend dependencies
         working-directory: frontend
         run: npm install
@@ -128,7 +141,11 @@ jobs:
         shell: bash
         run: |
           export PATH="$(go env GOPATH)/bin:$PATH"
-          wails build -clean -platform "${{ matrix.goos }}/${{ matrix.arch }}"
+          build_cmd=(wails build -clean -platform "${{ matrix.goos }}/${{ matrix.arch }}")
+          if [[ -n "${{ matrix.build_tags || '' }}" ]]; then
+            build_cmd+=(-tags "${{ matrix.build_tags }}")
+          fi
+          "${build_cmd[@]}"
 
       - name: Archive Windows artifact
         if: matrix.platform == 'windows'
