@@ -1,0 +1,321 @@
+/* 全局样式：暗色主题 + 滚动条 + Element Plus 覆盖 */
+
+:root {
+  --bg-primary: #1a1a1a;
+  --bg-secondary: #242424;
+  --bg-card: #2d2d2d;
+  --bg-hover: #363636;
+  --text-primary: #e0e0e0;
+  --text-secondary: #a0a0a0;
+  --text-muted: #6e6e6e;
+  --border-color: #3a3a3a;
+  --border-light: #454545;
+  --accent-color: #409eff;
+  --accent-hover: #66b1ff;
+  --success-color: #67c23a;
+  --warning-color: #e6a23c;
+  --danger-color: #f56c6c;
+  --sidebar-width: 200px;
+  --sidebar-collapsed-width: 60px;
+  --titlebar-height: 36px;
+  --statusbar-height: 24px;
+  font-family: 'Cascadia Code', 'JetBrains Mono', 'Consolas', 'Courier New', monospace;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  height: 100vh;
+  overflow: hidden;
+  user-select: none;
+  -webkit-font-smoothing: antialiased;
+}
+
+#app {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 允许输入框和文本域可以被选中 */
+input, textarea, [contenteditable] {
+  user-select: text;
+}
+
+/* 自定义滚动条 */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: #555;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #777;
+}
+
+/* ============================================================
+   Element Plus 暗色主题覆盖
+   ============================================================ */
+
+/* 卡片 */
+.el-card {
+  --el-card-bg-color: var(--bg-card);
+  border-color: var(--border-color) !important;
+  color: var(--text-primary);
+}
+
+/* 对话框 */
+.el-dialog {
+  --el-dialog-bg-color: var(--bg-secondary);
+  --el-dialog-border-radius: 8px;
+  border: 1px solid var(--border-color);
+}
+
+.el-dialog__title {
+  color: var(--text-primary) !important;
+}
+
+.el-dialog__body {
+  color: var(--text-primary) !important;
+}
+
+/* 表格 */
+.el-table {
+  --el-table-bg-color: var(--bg-card);
+  --el-table-tr-bg-color: var(--bg-card);
+  --el-table-header-bg-color: var(--bg-secondary);
+  --el-table-border-color: var(--border-color);
+  --el-table-text-color: var(--text-primary);
+  --el-table-header-text-color: var(--text-secondary);
+  --el-table-row-hover-bg-color: var(--bg-hover);
+  --el-fill-color-lighter: var(--bg-hover);
+}
+
+/* 输入框 */
+.el-input__wrapper {
+  background-color: var(--bg-primary) !important;
+  border-color: var(--border-color) !important;
+  box-shadow: 0 0 0 1px var(--border-color) inset !important;
+}
+
+.el-input__wrapper:hover {
+  box-shadow: 0 0 0 1px var(--border-light) inset !important;
+}
+
+.el-input__wrapper.is-focus {
+  box-shadow: 0 0 0 1px var(--accent-color) inset !important;
+}
+
+.el-input__inner {
+  color: var(--text-primary) !important;
+  background-color: transparent !important;
+}
+
+.el-input__inner::placeholder {
+  color: var(--text-muted) !important;
+}
+
+/* 文本域 */
+.el-textarea__inner {
+  background-color: var(--bg-primary) !important;
+  border-color: var(--border-color) !important;
+  color: var(--text-primary) !important;
+  font-family: inherit;
+}
+
+.el-textarea__inner:focus {
+  border-color: var(--accent-color) !important;
+}
+
+/* 选择器 */
+.el-select .el-input__wrapper {
+  background-color: var(--bg-primary) !important;
+}
+
+.el-select-dropdown {
+  background-color: var(--bg-secondary) !important;
+  border-color: var(--border-color) !important;
+}
+
+.el-select-dropdown__item {
+  color: var(--text-primary) !important;
+}
+
+.el-select-dropdown__item:hover,
+.el-select-dropdown__item.hover {
+  background-color: var(--bg-hover) !important;
+}
+
+.el-select-dropdown__item.selected {
+  color: var(--accent-color) !important;
+}
+
+/* 数字输入 */
+.el-input-number .el-input__wrapper {
+  background-color: var(--bg-primary) !important;
+}
+
+/* 表单标签 */
+.el-form-item__label {
+  color: var(--text-secondary) !important;
+}
+
+/* 菜单 */
+.el-menu {
+  background-color: var(--bg-secondary) !important;
+  border-right-color: var(--border-color) !important;
+}
+
+.el-menu-item {
+  color: var(--text-secondary) !important;
+}
+
+.el-menu-item:hover {
+  background-color: var(--bg-hover) !important;
+  color: var(--text-primary) !important;
+}
+
+.el-menu-item.is-active {
+  color: var(--accent-color) !important;
+  background-color: rgba(64, 158, 255, 0.1) !important;
+}
+
+/* 标签 */
+.el-tag {
+  font-family: inherit;
+}
+
+/* 分隔线 */
+.el-divider {
+  border-color: var(--border-color) !important;
+}
+
+/* 下拉菜单 */
+.el-dropdown-menu {
+  background-color: var(--bg-secondary) !important;
+  border-color: var(--border-color) !important;
+}
+
+.el-dropdown-menu__item {
+  color: var(--text-primary) !important;
+}
+
+.el-dropdown-menu__item:hover {
+  background-color: var(--bg-hover) !important;
+}
+
+/* 消息提示 */
+.el-message {
+  background-color: var(--bg-secondary) !important;
+  border-color: var(--border-color) !important;
+}
+
+/* 弹窗遮罩 */
+.el-overlay {
+  background-color: rgba(0, 0, 0, 0.6) !important;
+}
+
+/* 分页 */
+.el-pagination {
+  --el-pagination-bg-color: var(--bg-card);
+  --el-pagination-button-bg-color: var(--bg-card);
+  color: var(--text-secondary) !important;
+}
+
+/* 滑块 */
+.el-slider__button {
+  border-color: var(--accent-color) !important;
+}
+
+/* 开关 */
+.el-switch__core {
+  border-color: var(--border-color) !important;
+  background-color: var(--bg-hover) !important;
+}
+
+/* 工具提示 */
+.el-tooltip__popper {
+  background-color: var(--bg-secondary) !important;
+  border-color: var(--border-color) !important;
+  color: var(--text-primary) !important;
+}
+
+/* 空状态 */
+.el-empty__description p {
+  color: var(--text-muted) !important;
+}
+
+/* 弹出确认框 */
+.el-popconfirm__main {
+  color: var(--text-primary) !important;
+}
+
+/* 警告框 */
+.el-message-box {
+  background-color: var(--bg-secondary) !important;
+  border-color: var(--border-color) !important;
+}
+
+.el-message-box__title {
+  color: var(--text-primary) !important;
+}
+
+.el-message-box__content {
+  color: var(--text-secondary) !important;
+}
+
+/* ============================================================
+   通用工具类
+   ============================================================ */
+.text-muted {
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.text-secondary {
+  color: var(--text-secondary);
+}
+
+.mono {
+  font-family: 'Cascadia Code', 'JetBrains Mono', 'Consolas', monospace;
+  font-size: 13px;
+}
+
+.page-container {
+  padding: 20px;
+  height: 100%;
+  overflow-y: auto;
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.page-header h2 {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.page-header .subtitle {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}

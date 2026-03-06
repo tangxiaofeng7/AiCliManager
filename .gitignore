@@ -1,0 +1,21 @@
+# Build outputs
+build/
+frontend/dist/
+
+# Dependencies
+frontend/node_modules/
+
+# Local databases and runtime files
+*.db
+*.db-journal
+*.log
+
+# IDE / OS
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+.claude/
+
+# Wails generated frontend runtime
+frontend/wailsjs/runtime/
