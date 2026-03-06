@@ -48,12 +48,12 @@ jobs:
         working-directory: frontend
         run: npm install
 
-      - name: Run Go tests
-        run: go test ./...
-
       - name: Build frontend
         working-directory: frontend
         run: npm run build
+
+      - name: Run Go tests
+        run: go test ./...
 
       - name: Build application
         shell: bash

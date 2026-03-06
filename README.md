@@ -260,7 +260,7 @@ Wails 绑定层，负责：
 
 ## Release 产物
 
-从 `v0.1.1` 开始，仓库包含面向 GitHub Actions 的基础 Release 流程：
+从 `v0.1.2` 开始，仓库包含面向 GitHub Actions 的基础 Release 流程：
 
 - `push` / `pull_request` 会自动执行 `go test ./...` 与前端构建
 - `v*` tag 或手动触发可执行 Release 构建工作流

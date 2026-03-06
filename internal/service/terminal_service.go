@@ -319,16 +319,20 @@ func windowsPathToWSL(path string) string {
 	if path == "" {
 		return "~"
 	}
-	volume := filepath.VolumeName(path)
+
 	cleanPath := filepath.Clean(path)
-	if len(volume) == 2 && volume[1] == ':' {
-		drive := strings.ToLower(string(volume[0]))
-		rest := strings.TrimPrefix(cleanPath, volume)
+	if len(cleanPath) >= 2 && cleanPath[1] == ':' {
+		drive := strings.ToLower(string(cleanPath[0]))
+		rest := cleanPath[2:]
 		rest = strings.ReplaceAll(rest, `\`, "/")
 		if rest == "" {
 			rest = "/"
 		}
+		if !strings.HasPrefix(rest, "/") {
+			rest = "/" + rest
+		}
 		return "/mnt/" + drive + rest
 	}
+
 	return strings.ReplaceAll(cleanPath, `\`, "/")
 }
