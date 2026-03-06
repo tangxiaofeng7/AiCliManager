@@ -1,0 +1,85 @@
+name: Bug Report
+description: 报告可复现的问题、崩溃、配置异常或构建失败
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢反馈。提交前请先确认：
+        - 已阅读 README 与 CONTRIBUTING 文档
+        - 安全漏洞请不要公开提交，请改走 SECURITY.md 中的私下通道
+  - type: input
+    id: version
+    attributes:
+      label: 应用版本
+      description: 例如 v0.1.0
+      placeholder: v0.1.0
+    validations:
+      required: true
+  - type: dropdown
+    id: platform
+    attributes:
+      label: 操作系统
+      options:
+        - Windows 11
+        - Windows 10
+        - macOS
+        - Linux
+        - Other
+    validations:
+      required: true
+  - type: input
+    id: cli-tool
+    attributes:
+      label: 相关 CLI 工具
+      description: 例如 Claude Code / Codex / OpenCode
+      placeholder: Claude Code
+    validations:
+      required: true
+  - type: input
+    id: terminal
+    attributes:
+      label: 使用的终端
+      description: 例如 wt / PowerShell / cmd / WSL / Terminal.app / tmux
+      placeholder: wt
+  - type: textarea
+    id: steps
+    attributes:
+      label: 复现步骤
+      placeholder: |
+        1. 打开应用
+        2. 进入某页面
+        3. 点击某按钮
+        4. 出现错误
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: 期望行为
+      placeholder: 应该发生什么？
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: 实际行为
+      placeholder: 实际发生了什么？
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: 日志、报错或截图
+      description: 请先移除 API Key、密码、Token 等敏感信息
+      render: shell
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: 提交前确认
+      options:
+        - label: 我已确认这不是安全漏洞公开披露
+          required: true
+        - label: 我已移除日志中的敏感信息
+          required: true

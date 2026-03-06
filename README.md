@@ -2,6 +2,8 @@
 
 AiCliManager 是一个基于 **Wails v2 + Go + Vue 3 + SQLite** 的桌面应用，用来统一管理并启动多个 AI CLI 工具。
 
+[Release 下载](#release-产物) · [贡献指南](./CONTRIBUTING.md) · [安全策略](./SECURITY.md) · [行为准则](./CODE_OF_CONDUCT.md) · [许可证](./LICENSE)
+
 当前内置支持：
 - Claude Code
 - Codex
@@ -242,6 +244,36 @@ Wails 绑定层，负责：
 - 主要功能模块已经分层完成
 - 当前没有单独配置 lint 命令
 - 当前测试覆盖较少
+
+---
+
+## 开源协作
+
+- 贡献流程：[`CONTRIBUTING.md`](./CONTRIBUTING.md)
+- 安全漏洞反馈：[`SECURITY.md`](./SECURITY.md)
+- 社区行为准则：[`CODE_OF_CONDUCT.md`](./CODE_OF_CONDUCT.md)
+- 开源许可证：[`LICENSE`](./LICENSE)
+
+提交 Issue 或 PR 前，建议先阅读以上文档。
+
+---
+
+## Release 产物
+
+从 `v0.1.1` 开始，仓库包含面向 GitHub Actions 的基础 Release 流程：
+
+- `push` / `pull_request` 会自动执行 `go test ./...` 与前端构建
+- `v*` tag 或手动触发可执行 Release 构建工作流
+- 首版 Release 自动化优先输出 Windows 主产物，后续再按稳定性扩展更多平台
+
+发布方式建议：
+
+1. 确认 `go test ./...` 与 `cd frontend && npm run build` 通过
+2. 创建并推送版本 tag，例如 `v0.1.1`
+3. 等待 GitHub Actions 完成 Release 工作流
+4. 到 GitHub Release 页面下载 ZIP 附件
+
+你可以在 GitHub Release 页面下载已发布版本的构建附件。
 
 ---
 

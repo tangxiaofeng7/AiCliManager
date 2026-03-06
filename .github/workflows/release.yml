@@ -1,0 +1,87 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  APP_NAME: AiCliManager
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Resolve release version
+        shell: pwsh
+        run: |
+          if ($env:GITHUB_REF -like 'refs/tags/*') {
+            "RELEASE_VERSION=$env:GITHUB_REF_NAME" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          } else {
+            "RELEASE_VERSION=manual-$env:GITHUB_RUN_NUMBER" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          }
+
+      - name: Install Wails CLI
+        run: go install github.com/wailsapp/wails/v2/cmd/wails@latest
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm install
+
+      - name: Run Go tests
+        run: go test ./...
+
+      - name: Build frontend
+        working-directory: frontend
+        run: npm run build
+
+      - name: Build application
+        shell: bash
+        run: |
+          export PATH="$(go env GOPATH)/bin:$PATH"
+          wails build -clean
+
+      - name: Archive Windows artifact
+        shell: pwsh
+        run: |
+          $artifact = "${env:APP_NAME}-${env:RELEASE_VERSION}-windows-amd64.zip"
+          New-Item -ItemType Directory -Force -Path dist | Out-Null
+          Copy-Item -Path build/bin/* -Destination dist -Recurse -Force
+          if (Test-Path $artifact) {
+            Remove-Item $artifact -Force
+          }
+          Compress-Archive -Path dist/* -DestinationPath $artifact -Force
+          "ARTIFACT_NAME=$artifact" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+      - name: Upload workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.APP_NAME }}-${{ env.RELEASE_VERSION }}-windows-amd64
+          path: ${{ env.ARTIFACT_NAME }}
+
+      - name: Upload asset to GitHub Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ env.ARTIFACT_NAME }}
+          generate_release_notes: true
