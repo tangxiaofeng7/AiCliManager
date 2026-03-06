@@ -260,18 +260,55 @@ Wails 绑定层，负责：
 
 ## Release 产物
 
-从 `v0.1.2` 开始，仓库包含面向 GitHub Actions 的基础 Release 流程：
+从 `v0.1.2` 开始，仓库包含面向 GitHub Actions 的多平台 Release 流程：
 
 - `push` / `pull_request` 会自动执行 `go test ./...` 与前端构建
 - `v*` tag 或手动触发可执行 Release 构建工作流
-- 首版 Release 自动化优先输出 Windows 主产物，后续再按稳定性扩展更多平台
+- Release 工作流会先构建前端，再执行 Wails 多平台打包并统一上传 GitHub Release 附件
+
+当前支持的发布矩阵：
+
+- Windows amd64
+- Windows arm64
+- Linux amd64
+- Linux arm64
+- macOS amd64
+- macOS arm64
+
+当前产物格式：
+
+- Windows：`.zip`
+- Linux：`.tar.gz`
+- macOS：`.zip`
+
+Release 附件命名格式：
+
+- `AiCliManager-${RELEASE_VERSION}-windows-amd64.zip`
+- `AiCliManager-${RELEASE_VERSION}-windows-arm64.zip`
+- `AiCliManager-${RELEASE_VERSION}-linux-amd64.tar.gz`
+- `AiCliManager-${RELEASE_VERSION}-linux-arm64.tar.gz`
+- `AiCliManager-${RELEASE_VERSION}-macos-amd64.zip`
+- `AiCliManager-${RELEASE_VERSION}-macos-arm64.zip`
+
+当前明确不提供：
+
+- `.dmg`
+- `.deb`
+- `.rpm`
+- `.msi`
+
+注意事项：
+
+- macOS 当前为未签名构建，首次运行时可能需要用户在系统安全设置中手动放行。
+- Linux 当前仅提供 `.tar.gz` 主产物，不包含 `.deb`、`.rpm` 或 AppImage。
 
 发布方式建议：
 
 1. 确认 `go test ./...` 与 `cd frontend && npm run build` 通过
-2. 创建并推送版本 tag，例如 `v0.1.1`
-3. 等待 GitHub Actions 完成 Release 工作流
-4. 到 GitHub Release 页面下载 ZIP 附件
+2. 确认 `wails.json` 与 `frontend/package.json` 版本一致
+3. 创建并推送版本 tag，例如 `v0.1.2`
+4. 等待 GitHub Actions 完成 Release 工作流
+5. 到 GitHub Release 页面下载对应平台与架构的附件
 
 你可以在 GitHub Release 页面下载已发布版本的构建附件。
 

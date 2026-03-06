@@ -13,8 +13,65 @@ env:
   APP_NAME: AiCliManager
 
 jobs:
-  build-windows:
-    runs-on: windows-latest
+  prepare:
+    runs-on: ubuntu-latest
+    outputs:
+      release_version: ${{ steps.release-meta.outputs.release_version }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Resolve release version
+        id: release-meta
+        shell: bash
+        run: |
+          if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
+            release_version="${GITHUB_REF_NAME}"
+          else
+            release_version="manual-${GITHUB_RUN_NUMBER}"
+          fi
+          echo "release_version=${release_version}" >> "$GITHUB_OUTPUT"
+
+  build:
+    needs: prepare
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: windows
+            goos: windows
+            arch: amd64
+            runner: windows-latest
+            archive_format: zip
+          - platform: windows
+            goos: windows
+            arch: arm64
+            runner: windows-latest
+            archive_format: zip
+          - platform: linux
+            goos: linux
+            arch: amd64
+            runner: ubuntu-latest
+            archive_format: tar.gz
+          - platform: linux
+            goos: linux
+            arch: arm64
+            runner: ubuntu-latest
+            archive_format: tar.gz
+          - platform: macos
+            goos: darwin
+            arch: amd64
+            runner: macos-latest
+            archive_format: zip
+          - platform: macos
+            goos: darwin
+            arch: arm64
+            runner: macos-latest
+            archive_format: zip
+
+    env:
+      RELEASE_VERSION: ${{ needs.prepare.outputs.release_version }}
 
     steps:
       - name: Checkout
@@ -32,17 +89,26 @@ jobs:
           cache: npm
           cache-dependency-path: frontend/package-lock.json
 
-      - name: Resolve release version
-        shell: pwsh
+      - name: Validate version consistency
+        shell: bash
         run: |
-          if ($env:GITHUB_REF -like 'refs/tags/*') {
-            "RELEASE_VERSION=$env:GITHUB_REF_NAME" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-          } else {
-            "RELEASE_VERSION=manual-$env:GITHUB_RUN_NUMBER" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          node <<'EOF'
+          const fs = require('fs')
+          const wails = JSON.parse(fs.readFileSync('wails.json', 'utf8'))
+          const frontend = JSON.parse(fs.readFileSync('frontend/package.json', 'utf8'))
+          const releaseVersion = process.env.RELEASE_VERSION
+          const normalizedReleaseVersion = releaseVersion.startsWith('v') ? releaseVersion.slice(1) : releaseVersion
+
+          if (wails.version !== frontend.version) {
+            console.error(`Version mismatch: wails.json=${wails.version}, frontend/package.json=${frontend.version}`)
+            process.exit(1)
           }
 
-      - name: Install Wails CLI
-        run: go install github.com/wailsapp/wails/v2/cmd/wails@latest
+          if (releaseVersion.startsWith('v') && wails.version !== normalizedReleaseVersion) {
+            console.error(`Tag version mismatch: tag=${releaseVersion}, wails.json=${wails.version}`)
+            process.exit(1)
+          }
+          EOF
 
       - name: Install frontend dependencies
         working-directory: frontend
@@ -55,33 +121,71 @@ jobs:
       - name: Run Go tests
         run: go test ./...
 
+      - name: Install Wails CLI
+        run: go install github.com/wailsapp/wails/v2/cmd/wails@latest
+
       - name: Build application
         shell: bash
         run: |
           export PATH="$(go env GOPATH)/bin:$PATH"
-          wails build -clean
+          wails build -clean -platform "${{ matrix.goos }}/${{ matrix.arch }}"
 
       - name: Archive Windows artifact
+        if: matrix.platform == 'windows'
         shell: pwsh
         run: |
-          $artifact = "${env:APP_NAME}-${env:RELEASE_VERSION}-windows-amd64.zip"
-          New-Item -ItemType Directory -Force -Path dist | Out-Null
-          Copy-Item -Path build/bin/* -Destination dist -Recurse -Force
+          $artifact = "${env:APP_NAME}-${env:RELEASE_VERSION}-${{ matrix.platform }}-${{ matrix.arch }}.${{ matrix.archive_format }}"
+          $stageDir = Join-Path $env:RUNNER_TEMP 'release-stage'
+          if (Test-Path $stageDir) {
+            Remove-Item $stageDir -Recurse -Force
+          }
+          New-Item -ItemType Directory -Force -Path $stageDir | Out-Null
+          Copy-Item -Path build/bin/* -Destination $stageDir -Recurse -Force
           if (Test-Path $artifact) {
             Remove-Item $artifact -Force
           }
-          Compress-Archive -Path dist/* -DestinationPath $artifact -Force
+          Compress-Archive -Path (Join-Path $stageDir '*') -DestinationPath $artifact -Force
           "ARTIFACT_NAME=$artifact" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+      - name: Archive Linux and macOS artifacts
+        if: matrix.platform != 'windows'
+        shell: bash
+        run: |
+          artifact="${APP_NAME}-${RELEASE_VERSION}-${{ matrix.platform }}-${{ matrix.arch }}.${{ matrix.archive_format }}"
+          stage_dir="${RUNNER_TEMP}/release-stage"
+          rm -rf "$stage_dir"
+          mkdir -p "$stage_dir"
+          cp -R build/bin/. "$stage_dir/"
+          if [[ "${{ matrix.archive_format }}" == "tar.gz" ]]; then
+            tar -C "$stage_dir" -czf "$artifact" .
+          else
+            (cd "$stage_dir" && zip -r "$GITHUB_WORKSPACE/$artifact" .)
+          fi
+          echo "ARTIFACT_NAME=$artifact" >> "$GITHUB_ENV"
 
       - name: Upload workflow artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.APP_NAME }}-${{ env.RELEASE_VERSION }}-windows-amd64
+          name: ${{ env.APP_NAME }}-${{ env.RELEASE_VERSION }}-${{ matrix.platform }}-${{ matrix.arch }}
           path: ${{ env.ARTIFACT_NAME }}
 
-      - name: Upload asset to GitHub Release
+  publish-release:
+    needs:
+      - prepare
+      - build
+    runs-on: ubuntu-latest
+    env:
+      RELEASE_VERSION: ${{ needs.prepare.outputs.release_version }}
+    steps:
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: release-assets
+          merge-multiple: true
+
+      - name: Upload assets to GitHub Release
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v2
         with:
-          files: ${{ env.ARTIFACT_NAME }}
+          files: release-assets/*
           generate_release_notes: true
